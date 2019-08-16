@@ -3,23 +3,79 @@
  */
 package quotes;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
+import java.net.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class App {
-    public static void main(String[] args) throws FileNotFoundException {
-       String newQuote = returnQuote("src/main/resources/quotes.json");
-       System.out.println(newQuote);
+    private static Object ArrayList;
+
+    public static void main(String[] args) throws IOException {
+
+        String newQuote = getQuotes();
+        System.out.println(newQuote);
+
     }
 
-    public static String returnQuote(String filePath) throws FileNotFoundException {
+    public static Quote[] returnQuotes(String filePath) throws FileNotFoundException {
         Gson gson = new Gson();
         JsonReader reader = new JsonReader(new FileReader(filePath));
         Quote[] quotes = gson.fromJson(reader, Quote[].class);
-        int newRandom = (int) (Math.random() * quotes.length);
-        return quotes[newRandom].toString();
+        return quotes;
     }
+    public static Quote getRandomQuote(Quote[] quotes){
+        int newRandom = (int) (Math.random() * quotes.length);
+        return quotes[newRandom];
+    }
+    public static String getQuotes() throws IOException {
+
+        String returnedQuote = "";
+        try {
+            URL url = new URL("http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            connection.setRequestMethod("GET");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine = in.readLine();
+            in.close();
+
+            RandomQuote newQuote = new Gson().fromJson(inputLine, RandomQuote.class);
+
+
+            writeQuoteToFile(newQuote);
+            returnedQuote = "From internet " + newQuote.toString();
+        } catch (IOException e) {
+            Quote[] quotes = returnQuotes("src/main/resources/quotes.json");
+            returnedQuote = "From file " + getRandomQuote(quotes).toString();
+        }
+        return returnedQuote;
+    }
+    public static void writeQuoteToFile(RandomQuote newQuote) throws IOException {
+
+        Quote newQ = new Quote();
+        newQ.setText(newQuote.getQuoteText());
+        newQ.setAuthor(newQuote.getQuoteAuthor());
+        newQ.setLikes("");
+        Gson gson = new Gson();
+        JsonReader reader = new JsonReader(new FileReader("src/main/resources/newquotes.json"));
+        ArrayList<Quote> quotes = gson.fromJson(reader, new TypeToken<ArrayList<Quote>>() {
+        }.getType());
+        quotes.add(newQ);
+        String writeAllQuotes = gson.toJson(quotes);
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/newquotes.json"));
+        writer.write(writeAllQuotes);
+        writer.close();
+
+    }
+
 }

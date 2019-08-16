@@ -2,6 +2,9 @@
 #### Feature Task
 - Use quotes file provided (src/main/resources/quotes.json) and display a random quote and author from the file each time the application is run.
 - Use GSON to parse the json file
+- Get quotes from an API
+- If internet is down, still read a quote from the file and return
+- Write new quote to file if returned from internet
 
 #### Approach
 - Create a Quotes class

@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -18,8 +19,9 @@ public class AppTest {
     @Test
     public void testQuoteHasAnAuthor() throws FileNotFoundException {
         String filePath = "src/main/resources/quotes.json";
-        String newQuote = App.returnQuote(filePath);
-        assertTrue(newQuote.contains("Author"));
+        Quote[] quotes = App.returnQuotes(filePath);
+        String randomQuote = App.getRandomQuote(quotes).toString();
+        assertTrue(randomQuote.contains("Author"));
     }
     @Test
     public void testLengthOfReturnedArray() throws FileNotFoundException {
@@ -32,9 +34,9 @@ public class AppTest {
     @Test
     public void testQuoteHasText() throws FileNotFoundException {
         String filePath = "src/main/resources/quotes.json";
-        String newQuote = App.returnQuote(filePath);
-        assertTrue(newQuote.contains("Quote"));
-        newQuote.
+        Quote[] quotes = App.returnQuotes(filePath);
+        String randomQuote = App.getRandomQuote(quotes).toString();
+        assertTrue(randomQuote.contains("Quote"));
 
     }
     @Test
@@ -51,4 +53,28 @@ public class AppTest {
 
     }
 
+    @Test
+    public void testgetQuoteFromInternet() throws IOException {
+        String randomQuote = App.getQuotes();
+        assertTrue(randomQuote.contains("From internet "));
+
+    }
+    @Test
+    public void testgetQuoteFromFile() throws IOException {
+        //turn wi-fi off before trying
+        String randomQuote = App.getQuotes();
+        assertTrue(randomQuote.contains("From file "));
+
+    }
+    @Test
+    public void testWriteToFile() throws IOException {
+        String filePath = "src/main/resources/quotes.json";
+        Quote[] quotes = App.returnQuotes(filePath);
+        int numberOfQuotes = quotes.length;
+        Quote[] quotesNew = App.returnQuotes(filePath);
+        int currentNumberOfQuotes = quotesNew.length;
+        int curr = numberOfQuotes;
+        assertEquals("New number of tags", currentNumberOfQuotes, curr);
+
+    }
 }
