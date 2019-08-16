@@ -34,7 +34,7 @@ public class AppTest {
         String filePath = "src/main/resources/quotes.json";
         String newQuote = App.returnQuote(filePath);
         assertTrue(newQuote.contains("Quote"));
-        newQuote.
+        newQuote;
 
     }
     @Test
