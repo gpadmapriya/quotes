@@ -16,27 +16,16 @@ import java.util.List;
 import java.util.Map;
 
 public class App {
-    private static Object ArrayList;
 
     public static void main(String[] args) throws IOException {
 
-        String newQuote = getQuotes();
+        String newQuote = getNewQuote();
         System.out.println(newQuote);
 
     }
 
-    public static Quote[] returnQuotes(String filePath) throws FileNotFoundException {
-        Gson gson = new Gson();
-        JsonReader reader = new JsonReader(new FileReader(filePath));
-        Quote[] quotes = gson.fromJson(reader, Quote[].class);
-        return quotes;
-    }
-    public static Quote getRandomQuote(Quote[] quotes){
-        int newRandom = (int) (Math.random() * quotes.length);
-        return quotes[newRandom];
-    }
-    public static String getQuotes() throws IOException {
-
+    public static String getNewQuote() throws IOException {
+        //Get new random quote from internet or file. Write quote to file if is from internet
         String returnedQuote = "";
         try {
             URL url = new URL("http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en");
@@ -50,32 +39,59 @@ public class App {
 
             RandomQuote newQuote = new Gson().fromJson(inputLine, RandomQuote.class);
 
-
             writeQuoteToFile(newQuote);
-            returnedQuote = "From internet " + newQuote.toString();
+            returnedQuote = "From internet\n" + newQuote.toString();
         } catch (IOException e) {
-            Quote[] quotes = returnQuotes("src/main/resources/quotes.json");
-            returnedQuote = "From file " + getRandomQuote(quotes).toString();
+            Quote[] quotes = getQuotesFromFile("src/main/resources/randomquotes.json");
+            returnedQuote = "From file\n" + getRandomQuote(quotes).toString();
         }
         return returnedQuote;
     }
-    public static void writeQuoteToFile(RandomQuote newQuote) throws IOException {
 
+    public static Quote[] getQuotesFromFile(String filePath) throws FileNotFoundException {
+        //Reads input file and returns an array of quotes
+        Gson gson = new Gson();
+        JsonReader reader = new JsonReader(new FileReader(filePath));
+        Quote[] quotes = gson.fromJson(reader, Quote[].class);
+        return quotes;
+    }
+
+    public static Quote getRandomQuote(Quote[] quotes){
+        //picks and returns a random quote from the list of Quotes
+        int newRandom = (int) (Math.random() * quotes.length);
+        return quotes[newRandom];
+    }
+
+    public static void writeQuoteToFile(RandomQuote newQuote) throws IOException {
+        //Instantiates a new Quote object and writes it to file if the quote is not already in the file
         Quote newQ = new Quote();
         newQ.setText(newQuote.getQuoteText());
         newQ.setAuthor(newQuote.getQuoteAuthor());
         newQ.setLikes("");
+        newQ.setTags(new String[0]);
         Gson gson = new Gson();
-        JsonReader reader = new JsonReader(new FileReader("src/main/resources/newquotes.json"));
+        JsonReader reader = new JsonReader(new FileReader("src/main/resources/randomquotes.json"));
         ArrayList<Quote> quotes = gson.fromJson(reader, new TypeToken<ArrayList<Quote>>() {
         }.getType());
-        quotes.add(newQ);
-        String writeAllQuotes = gson.toJson(quotes);
+        //Check if new quote is already cached, write to file only if it is already not cached
+        boolean isPresent = fileHasQuote(quotes,newQuote.getQuoteText());
+        if (!isPresent) {
+            quotes.add(newQ);
+            String writeAllQuotes = gson.toJson(quotes);
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/newquotes.json"));
-        writer.write(writeAllQuotes);
-        writer.close();
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/randomquotes.json"));
+            writer.write(writeAllQuotes);
+            writer.close();
+        }
 
     }
+    public static boolean fileHasQuote(ArrayList<Quote> quotes, String quoteText){
+        return quotes.stream()
+                .filter(quote -> quote.getText()
+                .equals(quoteText))
+                .findFirst()
+                .isPresent();
+    }
+
 
 }
