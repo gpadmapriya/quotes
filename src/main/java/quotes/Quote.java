@@ -38,6 +38,11 @@ public class Quote {
     public void setText(String text) {
         this.text = text;
     }
+
+    public Quote (String text){
+        this.text = text;
+    }
+
     public String toString(){
         String returnString = "";
         returnString = "Author: " + this.author + "\nQuote: " + this.text;
